@@ -1,0 +1,41 @@
+version: "3.7"
+services:
+  mysqlserver:
+    image: mysql:8.0
+    environment:
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=123456
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=database
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    networks:
+      - my-network
+
+  api-gateway:
+    container_name: "api-gateway"
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    volumes:
+      - ./:/app
+    networks:
+      - my-network
+    depends_on:
+      - mysqlserver
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqlserver:3306/database
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
+
+networks:
+  my-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
